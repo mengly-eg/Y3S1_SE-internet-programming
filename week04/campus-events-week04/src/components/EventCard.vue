@@ -10,7 +10,7 @@ const props = defineProps<{
 
 // TODO 2: declare an event `book` that sends the event id (defineEmits)
 const emit = defineEmits<{
-  (e: "book", id: number): void;
+  book: [id: number];
 }>();
 
 // TODO 3: computed values
