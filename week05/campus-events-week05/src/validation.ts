@@ -10,7 +10,18 @@ export const MAX_SEATS_PER_BOOKING = 4;
 //          at most min(MAX_SEATS_PER_BOOKING, seatsLeft) -> "You can book at most 4 seats." ("1 seat" when the max is 1)
 export function validateBooking(form: BookingInput, seatsLeft: number): FormErrors<BookingInput> {
   const errors: FormErrors<BookingInput> = {};
-  void [form, seatsLeft, EMAIL];
+  if (form.name.trim().length < 2) {
+    errors.name = "Enter your name (at least 2 characters).";
+  }
+  if (!EMAIL.test(form.email.trim())) {
+    errors.email = "Enter a valid email address.";
+  }
+  const maxSeats = Math.min(MAX_SEATS_PER_BOOKING, seatsLeft);
+  if (!Number.isInteger(form.seats) || form.seats < 1) {
+    errors.seats = "Book at least 1 seat.";
+  } else if (form.seats > maxSeats) {
+    errors.seats = `You can book at most ${maxSeats} seat${maxSeats === 1 ? "" : "s"}.`;
+  }
   return errors;
 }
 

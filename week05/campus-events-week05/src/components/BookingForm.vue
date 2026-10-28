@@ -8,11 +8,23 @@ const emit = defineEmits<{ submit: [input: BookingInput] }>();
 
 // EventForm.vue is a finished form: use it as your pattern.
 // TODO C2: a reactive `form` object { name: "", email: "", seats: 1 }
+const form = reactive<BookingInput>({ name: "", email: "", seats: 1 });
+
 // TODO C3: `submitted` (ref, false) and `errors` (computed with validateBooking)
+const submitted = ref(false);
+const errors = computed(() => validateBooking(form, props.seatsLeft));
+
 // TODO C4: onSubmit(): set submitted; stop if there are errors;
 //          otherwise emit "submit" with the trimmed name and email, and seats
 function onSubmit() {
-  void [computed, reactive, ref, hasErrors, validateBooking, props, emit];
+  submitted.value = true;
+  if (!hasErrors(errors.value)) {
+    emit("submit", {
+      name: form.name.trim(),
+      email: form.email.trim(),
+      seats: form.seats,
+    });
+  }
 }
 </script>
 
@@ -23,20 +35,23 @@ function onSubmit() {
   <form novalidate @submit.prevent="onSubmit">
     <label>
       Name
-      <input name="name" autocomplete="name" />
+      <input v-model="form.name" name="name" autocomplete="name" />
     </label>
+    <p v-if="submitted && errors.name" class="error">{{ errors.name }}</p>
 
     <label>
       Email
-      <input name="email" type="email" autocomplete="email" />
+      <input v-model="form.email" name="email" type="email" autocomplete="email" />
     </label>
+    <p v-if="submitted && errors.email" class="error">{{ errors.email }}</p>
 
     <label>
       Seats
-      <input name="seats" type="number" min="1" max="4" />
+      <input v-model.number="form.seats" name="seats" type="number" min="1" max="4" />
     </label>
+    <p v-if="submitted && errors.seats" class="error">{{ errors.seats }}</p>
 
-    <button type="submit">Book</button>
+    <button type="submit" :disabled="pending">{{ pending ? "Booking..." : "Book" }}</button>
   </form>
 </template>
 
