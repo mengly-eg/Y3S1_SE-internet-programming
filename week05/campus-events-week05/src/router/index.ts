@@ -16,6 +16,29 @@ export const routes = [
   //   /my-bookings   name "my-bookings"   MyBookingsPage
   //   anything else  name "not-found"     NotFoundPage      path: "/:pathMatch(.*)*"
   // Question: why must "/events/new" come before "/events/:id" if :id had no (\\d+)?
+  // Answer: because without the (\\d+) regex restriction, :id is a greedy parameter that matches any string segment (including the word "new").
+  {
+    path: "/events/new",
+    name: "event-new",
+    component: () => import("../pages/NewEventPage.vue"),
+    meta: { organiserOnly: true },
+  },
+  {
+    path: "/events/:id(\\d+)",
+    name: "event-detail",
+    component: () => import("../pages/EventDetailPage.vue"),
+    props: true,
+  },
+  {
+    path: "/my-bookings",
+    name: "my-bookings",
+    component: () => import("../pages/MyBookingsPage.vue"),
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    name: "not-found",
+    component: () => import("../pages/NotFoundPage.vue"),
+  },
 ];
 
 export function makeRouter(history: RouterHistory = createWebHistory()) {
@@ -24,7 +47,12 @@ export function makeRouter(history: RouterHistory = createWebHistory()) {
   // TODO A2: a global guard (router.beforeEach).
   // If the route has meta.organiserOnly and the session is not an organiser,
   // redirect to { name: "events", query: { denied: "1" } }.
-  void useSessionStore; // remove this line when you use the store
+  router.beforeEach((to) => {
+    const session = useSessionStore();
+    if (to.meta.organiserOnly && !session.isOrganiser) {
+      return { name: "events", query: { denied: "1" } };
+    }
+  });
 
   return router;
 }
